@@ -13,6 +13,7 @@ from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthenticat
 
 from util.json_request import JsonResponse
 from util.password_policy_validators import normalize_password, validate_password
+from elitemba.services import revoke_token
 
 
 class ElitePasswordResetView(APIView):
@@ -51,7 +52,8 @@ class ElitePasswordResetView(APIView):
             except ValidationError as err:
                 return JsonResponse({'success': False, 'code': 202, 'msg': ' '.join(err.messages)})                    
             user.set_password(password)
-            user.save() 
+            user.save()
+            revoke_token(user.id)
             return JsonResponse({'success': True, 'code': 200, 'msg': _('Password modified.')})
         else:
             return JsonResponse({'success': False, 'code': 203, 'msg': _('Wrong password')})
