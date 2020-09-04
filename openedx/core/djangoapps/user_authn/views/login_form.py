@@ -184,11 +184,12 @@ def login_and_registration_form(request, initial_mode="login"):
 
     # Redirect to logistration MFE if it is enabled
     if should_redirect_to_logistration_mircrofrontend():
+        query_params = request.GET.urlencode()
         url_path = '/{}{}'.format(
             initial_mode,
-            '?' + request.GET.urlencode() if request.GET.urlencode() else ''
+            '?' + query_params if query_params else ''
         )
-        return redirect(settings.LOGISTRATION_MICROFRONTEND_URL + url_path)
+        return redirect(settings.ACCOUNT_MICROFRONTEND_URL + url_path)
 
     # Account activation message
     account_activation_messages = [

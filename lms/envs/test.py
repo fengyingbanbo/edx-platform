@@ -585,7 +585,6 @@ PROFILE_MICROFRONTEND_URL = "http://profile-mfe/abc/"
 ORDER_HISTORY_MICROFRONTEND_URL = "http://order-history-mfe/"
 ACCOUNT_MICROFRONTEND_URL = "http://account-mfe/"
 LEARNING_MICROFRONTEND_URL = "http://learning-mfe"
-LOGISTRATION_MICROFRONTEND_URL = "http://logistration-mfe"
 
 ########################## limiting dashboard courses ######################
 

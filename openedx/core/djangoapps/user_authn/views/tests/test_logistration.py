@@ -97,7 +97,7 @@ class LoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMixin, ModuleSto
         with override_waffle_flag(REDIRECT_TO_ACCOUNT_MICROFRONTEND, active=True):
             response = self.client.get(reverse(url_name))
 
-        self.assertEqual(response.url, settings.LOGISTRATION_MICROFRONTEND_URL + path)
+        self.assertEqual(response.url, settings.ACCOUNT_MICROFRONTEND_URL + path)
         self.assertEqual(response.status_code, 302)
 
     @ddt.data(
@@ -120,7 +120,7 @@ class LoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMixin, ModuleSto
         query params are passed to the redirect url.
         """
         site_domain = 'example.org'
-        expected_url = settings.LOGISTRATION_MICROFRONTEND_URL + path + '?' + urlencode(query_params)
+        expected_url = settings.ACCOUNT_MICROFRONTEND_URL + path + '?' + urlencode(query_params)
 
         self.set_up_site(site_domain, {'ENABLE_ACCOUNT_MICROFRONTEND': True})
 
