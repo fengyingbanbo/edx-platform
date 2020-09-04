@@ -70,15 +70,6 @@ class LoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMixin, ModuleSto
     FEATURES_WITH_LOGIN_MFE_ENABLED = settings.FEATURES.copy()
     FEATURES_WITH_LOGIN_MFE_ENABLED['ENABLE_LOGIN_MICROFRONTEND'] = True
 
-    def _setup_site_configuration(self, cfg):
-        """
-        Setup site configuration using the configs provided.
-        """
-        site = SiteFactory.create()
-        site_config = SiteConfigurationFactory.create(site=site)
-        site_config.site_values = cfg
-        site_config.save()
-
     @ddt.data(
         ("signin_user", "/login"),
         ("register_user", "/register"),
