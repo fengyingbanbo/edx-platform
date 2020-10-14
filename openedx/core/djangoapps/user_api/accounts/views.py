@@ -49,7 +49,7 @@ from openedx.core.djangoapps.profile_images.images import remove_profile_images
 from openedx.core.djangoapps.user_api.accounts.image_helpers import get_profile_image_names, set_has_profile_image
 from openedx.core.djangoapps.user_authn.exceptions import AuthFailedError
 from openedx.core.djangolib.oauth2_retirement_utils import retire_dot_oauth2_models
-from openedx.core.lib.api.authentication import BearerAuthenticationAllowInactiveUser
+from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser,BearerAuthenticationAllowInactiveUser
 from openedx.core.lib.api.parsers import MergePatchParser
 from student.models import (
     AccountRecovery,
@@ -67,7 +67,8 @@ from student.models import (
     get_retired_username_by_username,
     is_username_retired
 )
-
+from util.validate_help import ValidateDataForEducation
+from util.sms_utils import send_short_message_by_linkgroup
 from ..errors import AccountUpdateError, AccountValidationError, UserNotAuthorized, UserNotFound
 from ..message_types import DeletionNotificationMessage
 from ..models import (
@@ -272,7 +273,7 @@ class AccountViewSet(ViewSet):
             If the update is successful, updated user account data is returned.
     """
     authentication_classes = (
-        JwtAuthentication, BearerAuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser
+        OAuth2AuthenticationAllowInactiveUser, JwtAuthentication, BearerAuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser
     )
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MergePatchParser,)
@@ -523,6 +524,82 @@ def _set_unusable_password(user):
     """
     user.set_unusable_password()
     user.save()
+
+
+class PhoneBindingViewSet(ViewSet):
+    authentication_classes = (
+        SessionAuthenticationAllowInactiveUser, JwtAuthentication, OAuth2AuthenticationAllowInactiveUser)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    verify_code_key = 'phone_binding_verifycode_{username}_{name}'
+    verify_code_timeout = 10 * 60
+
+    def send(self, request):
+        try:
+            phone = request.data['phone']
+            try:
+                language_version = str(request.session._session['_language'])
+                if not language_version:
+                    language_version = "zh-cn"
+            except Exception as e:
+                language_version = "zh-cn"
+                print(e.__str__)
+            self.send_mobile_code(request.user.username, phone, language_version)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return HttpResponse(content=getattr(e, 'message', str(e)), status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        if self.verify_code(request):
+            request.user.profile.phone = request.data['phone']
+            request.user.profile.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return HttpResponse(content=_('Verification failed'), status=status.HTTP_400_BAD_REQUEST)
+
+    def send_mobile_code(self, username, mobile, language='en'):
+        '''
+        发送手机验证码通知
+        '''
+        if not (mobile and ValidateDataForEducation().is_mobile(mobile)):
+            raise Exception(_(u"Please check mobile number format;"))
+
+        if UserProfile.objects.filter(phone_number=mobile):
+            raise Exception(_(u"The mobile number has been occupied."))
+
+        code = self.set_verify_code({'username': username, 'name': mobile})
+        if language == 'en':
+            user_msg = 'Your Verification Code for binding is {}, expiring in 10 minutes. In case of information leakage, please do not disclose your verification code.'.format(
+                code)
+        else:
+            user_msg = '验证码{}，用于绑定校验，10分钟内有效。请勿将验证码泄露，谨防被盗。'.format(code)
+        # status, msg = send_short_message_by_linkgroup(mobile, user_msg, '', channel=1)
+        print(user_msg)
+        # if not status:
+        #     raise Exception(msg)
+        return status, msg
+
+    def set_verify_code(self, key):
+        '''
+        设置验证码
+        '''
+        code_key = self.verify_code_key.format(**key)
+        code = random.randint(100000, 999999)  # 6位验证码
+        cache.set(code_key, str(code), self.verify_code_timeout)
+        return code
+
+    def verify_code(self, request):
+        try:
+            code = request.data['code']
+            phone = request.data['phone']
+            code_key = self.verify_code_key.format(**{'username': request.user.username, 'name': phone})
+            if cache.get(code_key) == code:
+                cache.delete(code_key)
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
 
 
 class AccountRetirementPartnerReportView(ViewSet):
