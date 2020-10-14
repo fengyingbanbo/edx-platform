@@ -1,15 +1,11 @@
 (function(define) {
-    'use strict';
-    define([
-        'jquery',
-        'js/student_account/views/AccessView'
-    ],
-        function($, AccessView) {
-            return function(options) {
-                var $logistrationElement = $('#login-and-registration-container');
-
-                new AccessView(_.extend(options, {el: $logistrationElement}));
-            };
+    'use strict'; 
+    RequireJS.define("js/student_account/logistration_factory", ["jquery", "js/student_account/views/AccessView"], function(e, t) {
+        return function(r) {
+            var i = e("#login-and-registration-container");
+            new t(_.extend(r, {
+                el: i
+            }))
         }
-    );
+    })
 }).call(this, define || RequireJS.define);

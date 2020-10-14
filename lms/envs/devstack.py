@@ -200,7 +200,7 @@ COURSE_DISCOVERY_MEANINGS = {
     'language': LANGUAGE_MAP,
 }
 
-FEATURES['ENABLE_COURSE_DISCOVERY'] = False
+FEATURES['ENABLE_COURSE_DISCOVERY'] = True
 # Setting for overriding default filtering facets for Course discovery
 # COURSE_DISCOVERY_FILTERS = ["org", "language", "modes"]
 FEATURES['COURSES_ARE_BROWSEABLE'] = True
@@ -324,6 +324,10 @@ FEATURES.update({
     'ENABLE_DISCUSSION_SERVICE': True,
     'SHOW_HEADER_LANGUAGE_SELECTOR': True,
     'ENABLE_ENTERPRISE_INTEGRATION': False,
+    'ENABLE_COMBINED_LOGIN_REGISTRATION': True,
+    'ENABLE_MEMBERSHIP_INTEGRATION': False,
+    'ENABLE_PAYMENTS_INTEGRATION': False,
+    'ENABLE_PROFESSORS': False,
 })
 
 ENABLE_MKTG_SITE = os.environ.get('ENABLE_MARKETING_SITE', False)
@@ -404,3 +408,18 @@ COMPREHENSIVE_THEME_DIRS = [
 # TEMPLATES[1]["DIRS"] = _make_mako_template_dirs
 # derive_settings(__name__)
  
+
+
+if FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+    INSTALLED_APPS.append('membership')
+    REST_FRAMEWORK.update({'EXCEPTION_HANDLER': 'membership.utils.customer_exception_handler'})
+
+######################## Professors ###########################
+if FEATURES.get('ENABLE_PROFESSORS'):
+    INSTALLED_APPS.append('professors')
+
+############################ WEIXINAPPID_AND_WEIXINAPPSECRET #########################
+WEIXINAPPID = ''
+WEIXINAPPSECRET = ''
+WEIXINAPPID = ENV_TOKENS.get('WEIXINAPPID', WEIXINAPPID)
+WEIXINAPPSECRET = ENV_TOKENS.get('WEIXINAPPSECRET', WEIXINAPPSECRET)

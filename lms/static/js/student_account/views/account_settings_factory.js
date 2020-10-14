@@ -12,7 +12,6 @@
                  AccountSettingsFieldViews, AccountSettingsView, StringUtils, HtmlUtils) {
         return function(
             fieldsData,
-            disableOrderHistoryTab,
             ordersHistoryData,
             authData,
             passwordResetSupportUrl,
@@ -22,6 +21,7 @@
             platformName,
             contactEmail,
             allowEmailChange,
+            hmmInEffect,
             socialPlatforms,
             syncLearnerProfileData,
             enterpriseName,
@@ -30,7 +30,7 @@
             extendedProfileFields,
             displayAccountDeletion,
             isSecondaryEmailFeatureEnabled,
-            betaLanguage
+            currency
         ) {
             var $accountSettingsElement, userAccountModel, userPreferencesModel, aboutSectionsData,
                 accountsSectionData, ordersSectionData, accountSettingsView, showAccountSettingsPage,
@@ -38,8 +38,7 @@
                 emailFieldView, secondaryEmailFieldView, socialFields, accountDeletionFields, platformData,
                 aboutSectionMessageType, aboutSectionMessage, fullnameFieldView, countryFieldView,
                 fullNameFieldData, emailFieldData, secondaryEmailFieldData, countryFieldData, additionalFields,
-                fieldItem, emailFieldViewIndex, focusId,
-                tabIndex = 0;
+                fieldItem, emailFieldViewIndex;
 
             $accountSettingsElement = $('.wrapper-account-settings');
 
@@ -52,7 +51,7 @@
             if (syncLearnerProfileData && enterpriseName) {
                 aboutSectionMessageType = 'info';
                 aboutSectionMessage = HtmlUtils.interpolateHtml(
-                    gettext('Your profile settings are managed by {enterprise_name}. Contact your administrator or {link_start}edX Support{link_end} for help.'),  // eslint-disable-line max-len
+                    gettext('Your profile settings are managed by {enterprise_name}. Contact your administrator or {link_start}EliteMBA Support{link_end} for help.'),  // eslint-disable-line max-len
                     {
                         enterprise_name: enterpriseName,
                         link_start: HtmlUtils.HTML(
@@ -77,7 +76,10 @@
                 ),
                 persistChanges: true
             };
-            if (!allowEmailChange || (syncLearnerProfileData && enterpriseReadonlyAccountFields.fields.indexOf('email') !== -1)) {  // eslint-disable-line max-len
+            if (hmmInEffect) {
+                emailFieldData.helpMessage = gettext('You have joined Harvard ManageMentor. Email Modification is not supported.');
+            }
+            if (!allowEmailChange || hmmInEffect || (syncLearnerProfileData && enterpriseReadonlyAccountFields.fields.indexOf('email') !== -1)) {  // eslint-disable-line max-len
                 emailFieldView = {
                     view: new AccountSettingsFieldViews.ReadonlyFieldView(emailFieldData)
                 };
@@ -89,9 +91,9 @@
 
             secondaryEmailFieldData = {
                 model: userAccountModel,
-                title: gettext('Recovery Email Address'),
+                title: gettext('Secondary Email Address'),
                 valueAttribute: 'secondary_email',
-                helpMessage: gettext('You may access your account with this address if single-sign on or access to your primary email is not available.'),  // eslint-disable-line max-len
+                helpMessage: gettext('You may access your account when single-sign on is not available.'),
                 persistChanges: true
             };
 
@@ -303,10 +305,12 @@
             // Add the social link fields
             socialFields = {
                 title: gettext('Social Media Links'),
-                subtitle: gettext('Optionally, link your personal accounts to the social media icons on your edX profile.'),  // eslint-disable-line max-len
+                // subtitle: gettext('Optionally, link your personal accounts to the social media icons on your edX profile.'),  // eslint-disable-line max-len
+                subtitle: gettext('Optionally, link your personal accounts to the social media icons on your EliteMBA profile.'),
                 fields: []
             };
-
+            
+            var fmts = gettext('Enter your %s username or the URL to your %s page. Delete the URL to remove the link.')
             for (var socialPlatform in socialPlatforms) {  // eslint-disable-line guard-for-in, no-restricted-syntax, vars-on-top, max-len
                 platformData = socialPlatforms[socialPlatform];
                 socialFields.fields.push(
@@ -315,10 +319,12 @@
                             model: userAccountModel,
                             title: gettext(platformData.display_name + ' Link'),
                             valueAttribute: 'social_links',
-                            helpMessage: gettext(
-                                'Enter your ' + platformData.display_name + ' username or the URL to your ' +
-                                platformData.display_name + ' page. Delete the URL to remove the link.'
-                            ),
+                            // helpMessage: gettext(
+                            //     'Enter your ' + platformData.display_name + ' username or the URL to your ' +
+                            //     platformData.display_name + ' page. Delete the URL to remove the link.'
+                            // ),
+                            
+                            helpMessage: interpolate(fmts, [platformData.display_name, platformData.display_name]),
                             platform: socialPlatform,
                             persistChanges: true,
                             placeholder: platformData.example
@@ -405,7 +411,8 @@
                                 orderDate: order.order_date,
                                 receiptUrl: order.receipt_url,
                                 valueAttribute: 'order-' + orderNumber,
-                                lines: order.lines
+                                lines: order.lines,
+                                currency: currency
                             })
                         };
                     })
@@ -421,25 +428,15 @@
                     accountsTabSections: accountsSectionData,
                     ordersTabSections: ordersSectionData
                 },
-                userPreferencesModel: userPreferencesModel,
-                disableOrderHistoryTab: disableOrderHistoryTab,
-                betaLanguage: betaLanguage
+                userPreferencesModel: userPreferencesModel
             });
 
             accountSettingsView.render();
-            focusId = $.cookie('focus_id');
-            if (focusId) {
-                if (~focusId.indexOf('beta-language')) {
-                    tabIndex = -1;
-
-                    // Scroll to top of selected element
-                    $('html, body').animate({
-                        scrollTop: $(focusId).offset().top
-                    }, 'slow');
-                }
-                $(focusId).attr({tabindex: tabIndex}).focus();
+            if( $.cookie('focus_id')) {
+                $($.cookie('focus_id')).attr({"tabindex": 0});
+                $($.cookie('focus_id')).focus();
                 // Deleting the cookie
-                document.cookie = 'focus_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/account;';
+                document.cookie = "focus_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/account;";
             }
             showAccountSettingsPage = function() {
                 // Record that the account settings page was viewed.

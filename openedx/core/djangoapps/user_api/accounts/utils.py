@@ -200,3 +200,13 @@ def is_multiple_user_enterprises_feature_enabled():
         Boolean value representing switch status
     """
     return user_api_waffle().is_enabled(ENABLE_MULTIPLE_USER_ENTERPRISES_FEATURE)
+
+def is_secondary_email_feature_enabled_for_user(user):
+    """
+    Checks to see if secondary email feature is enabled for the given user.
+    Returns:
+        Boolean value representing the status of secondary email feature.
+    """
+    # import is placed here to avoid cyclic import.
+    from openedx.features.enterprise_support.utils import is_enterprise_learner
+    return is_secondary_email_feature_enabled() and is_enterprise_learner(user)

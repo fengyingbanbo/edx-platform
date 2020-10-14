@@ -23,6 +23,7 @@
             events: {
                 'click .js-login': 'submitForm',
                 'click .forgot-password': 'forgotPassword',
+                'click .account-recovery': 'accountRecovery',
                 'click .login-provider': 'thirdPartyAuth'
             },
             formType: 'login',
@@ -137,6 +138,13 @@
                 this.clearPasswordResetSuccess();
             },
 
+            accountRecovery: function(event) {
+                event.preventDefault();
+
+                this.trigger('account-recovery-help');
+                this.clearPasswordResetSuccess();
+            },
+
             postFormSubmission: function() {
                 this.clearPasswordResetSuccess();
             },
@@ -145,8 +153,8 @@
                 var email = $('#password-reset-email').val(),
                     successTitle = gettext('Check Your Email'),
                     successMessageHtml = HtmlUtils.interpolateHtml(
-                        gettext('{paragraphStart}You entered {boldStart}{email}{boldEnd}. If this email address is associated with your {platform_name} account, we will send a message with password recovery instructions to this email address.{paragraphEnd}' + // eslint-disable-line max-len
-                        '{paragraphStart}If you do not receive a password reset message after 1 minute, verify that you entered the correct email address, or check your spam folder.{paragraphEnd}' + // eslint-disable-line max-len
+                        gettext('{paragraphStart}You entered {boldStart}{email}{boldEnd}. If this email address is associated with your {platform_name} account, we will send a message with password reset instructions to this email address.{paragraphEnd}' + // eslint-disable-line max-len
+                        '{paragraphStart}If you do not receive a password reset message, verify that you entered the correct email address, or check your spam folder.{paragraphEnd}' + // eslint-disable-line max-len
                         '{paragraphStart}If you need further assistance, {anchorStart}contact technical support{anchorEnd}.{paragraphEnd}'), { // eslint-disable-line max-len
                             boldStart: HtmlUtils.HTML('<b>'),
                             boldEnd: HtmlUtils.HTML('</b>'),
@@ -189,19 +197,12 @@
             },
 
             saveError: function(error) {
-                var errorCode;
-                var msg;
+                var msg = error.responseText;
                 if (error.status === 0) {
                     msg = gettext('An error has occurred. Check your Internet connection and try again.');
                 } else if (error.status === 500) {
                     msg = gettext('An error has occurred. Try refreshing the page, or check your Internet connection.'); // eslint-disable-line max-len
-                } else if (error.responseJSON !== undefined) {
-                    msg = error.responseJSON.value;
-                    errorCode = error.responseJSON.error_code;
-                } else {
-                    msg = gettext('An unexpected error has occurred.');
                 }
-
                 this.errors = [
                     StringUtils.interpolate(
                         '<li>{msg}</li>', {
@@ -211,13 +212,18 @@
                 ];
                 this.clearPasswordResetSuccess();
 
-                /* If the user successfully authenticated with a third-party provider, but they haven't
-                 * linked the accounts, instruct the user on how to link the accounts.
-                 */
-                if (errorCode === 'third-party-auth-with-no-linked-account' && this.currentProvider) {
+            /* If we've gotten a 403 error, it means that we've successfully
+             * authenticated with a third-party provider, but we haven't
+             * linked the account to an EdX account.  In this case,
+             * we need to prompt the user to enter a little more information
+             * to complete the registration process.
+             */
+                if (error.status === 403 &&
+                 error.responseText === 'third-party-auth' &&
+                 this.currentProvider) {
                     if (!this.hideAuthWarnings) {
                         this.clearFormErrors();
-                        this.renderThirdPartyAuthWarning();
+                        this.renderAuthWarning();
                     }
                 } else {
                     this.renderErrors(this.defaultFormErrorsTitle, this.errors);
@@ -225,7 +231,7 @@
                 this.toggleDisableButton(false);
             },
 
-            renderThirdPartyAuthWarning: function() {
+            renderAuthWarning: function() {
                 var message = _.sprintf(
                     gettext('You have successfully signed into %(currentProvider)s, but your %(currentProvider)s' +
                             ' account does not have a linked %(platformName)s account. To link your accounts,' +

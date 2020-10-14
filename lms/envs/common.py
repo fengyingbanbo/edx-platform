@@ -267,7 +267,7 @@ FEATURES = {
     # ENABLE_OAUTH2_PROVIDER to True
     'ENABLE_MOBILE_REST_API': False,
 
-    'ENABLE_COMBINED_LOGIN_REGISTRATION_FOOTER': False,
+    'SIMPLE_WIKI_REQUIRE_LOGIN_EDIT': False,
 
     # Enable organizational email opt-in
     'ENABLE_MKTG_EMAIL_OPT_IN': False,
@@ -478,6 +478,19 @@ FEATURES = {
     # .. toggle_status: supported
     # .. toggle_warnings: None
     'ENABLE_ORA_USER_STATE_UPLOAD_DATA': False,
+
+    # eliteu apps
+    # Whether to enable membership
+    'ENABLE_MEMBERSHIP_INTEGRATION': False,
+
+    # Whether to enable payments
+    'ENABLE_PAYMENTS_INTEGRATION': False,
+
+    # Whether to enable course unenroll
+    'ENABLE_COURSE_UNENROLL': False,
+
+    # Whether to enable elite courses sort
+    'ENABLE_COURSE_SORTING_BY_START_DATE_DESC': False
 }
 
 # Settings for the course reviews tool template and identification key, set either to None to disable course reviews
@@ -530,6 +543,8 @@ COURSE_MESSAGE_ALERT_DURATION_IN_DAYS = 14
 PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/lms
 REPO_ROOT = PROJECT_ROOT.dirname()
 COMMON_ROOT = REPO_ROOT / "common"
+# MEMBERSHIP_ROOT = REPO_ROOT / "../edx-membership"
+# PAYMENTS_ROOT = REPO_ROOT / "../eliteu-payments"
 OPENEDX_ROOT = REPO_ROOT / "openedx"
 ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
 COURSES_ROOT = ENV_ROOT / "data"
@@ -541,6 +556,8 @@ DATA_DIR = COURSES_ROOT
 sys.path.append(REPO_ROOT)
 sys.path.append(PROJECT_ROOT / 'djangoapps')
 sys.path.append(COMMON_ROOT / 'djangoapps')
+# sys.path.append(MEMBERSHIP_ROOT)
+# sys.path.append(PAYMENTS_ROOT)
 
 # For Node.js
 
@@ -678,6 +695,7 @@ MAKO_TEMPLATE_DIRS_BASE = [
     COMMON_ROOT / 'templates',
     COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
     COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
+    # MEMBERSHIP_ROOT / 'membership' / 'templates',
     OPENEDX_ROOT / 'core' / 'djangoapps' / 'cors_csrf' / 'templates',
     OPENEDX_ROOT / 'core' / 'djangoapps' / 'dark_lang' / 'templates',
     OPENEDX_ROOT / 'core' / 'lib' / 'license' / 'templates',
@@ -741,6 +759,7 @@ TEMPLATES = [
             COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
             COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
             COMMON_ROOT / 'static',  # required to statically include common Underscore templates
+            # MEMBERSHIP_ROOT / 'membership' / 'templates',
         ],
         # Options specific to this backend.
         'OPTIONS': {
@@ -1207,6 +1226,7 @@ STATICFILES_DIRS = [
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
     NODE_MODULES_ROOT / "@edx",
+    # MEMBERSHIP_ROOT / "membership" / "static",
 ]
 
 FAVICON_PATH = 'images/favicon.ico'
@@ -2350,7 +2370,7 @@ INSTALLED_APPS = [
     'openedx.core.djangoapps.xblock.apps.LmsXBlockAppConfig',
 
     # Student support tools
-    'support',
+    'support', 
 
     # django-oauth-toolkit
     'oauth2_provider',
@@ -3917,3 +3937,103 @@ GITHUB_REPO_ROOT = '/edx/var/edxapp/data'
 
 ##################### SUPPORT URL ############################
 SUPPORT_HOW_TO_UNENROLL_LINK = ''
+
+############################ WECHAT_APP_PAY #########################
+WECHAT_APP_PAY_INFO = {
+    "basic_info": {
+        "APPID": "",
+        "APPSECRET": "",
+        "MCHID": "",
+        "KEY": "",
+        "ACCESS_TOKEN": ""
+    },
+    "other_info": {
+        "BUY_COURSES_SUCCESS_TEMPLATE_ID": "",
+        "BUY_COURSES_SUCCESS_HREF_URL": "",
+        "COIN_SUCCESS_TEMPLATE_ID": "",
+        "COIN_SUCCESS_HREF_URL": "",
+        "SERVICE_TEL": "",
+        "NOTIFY_URL": "",
+        "JS_API_CALL_URL": "",
+        "SSLCERT_PATH": "",
+        "SSLKEY_PATH": ""
+    }
+}
+
+############################ WECHAT_PAY #########################
+WECHAT_PAY_INFO = {
+    "basic_info": {
+        "APPID": "",
+        "APPSECRET": "",
+        "MCHID": "",
+        "KEY": "",
+        "ACCESS_TOKEN": ""
+    },
+    "other_info": {
+        "BUY_COURSES_SUCCESS_TEMPLATE_ID": "",
+        "BUY_COURSES_SUCCESS_HREF_URL": "",
+        "COIN_SUCCESS_TEMPLATE_ID": "",
+        "COIN_SUCCESS_HREF_URL": "",
+        "SERVICE_TEL": "",
+        "NOTIFY_URL": "",
+        "JS_API_CALL_URL": "",
+        "SSLCERT_PATH": "",
+        "SSLKEY_PATH": ""
+    }
+}
+
+############################ WECHAT H5 PAY #########################
+WECHAT_H5_PAY_INFO = {
+    "basic_info":{
+        "APPID": "",
+        "APPSECRET": "",
+        "MCHID": "",
+        "KEY": "",
+        "ACCESS_TOKEN": ""
+    },
+    "other_info":{
+        "SERVICE_TEL": "",
+        "NOTIFY_URL": "",
+        "JS_API_CALL_URL": "",
+        "SSLCERT_PATH": "",
+        "SSLKEY_PATH": "",
+        "SPBILL_CREATE_IP": ""
+    }
+}
+
+############################ ALIPAY_INFO #########################
+ALIPAY_APP_INFO = {
+    "basic_info":{
+        "APP_ID": "",
+        "APP_PRIVATE_KEY": "",
+        "ALIPAY_RSA_PUBLIC_KEY": ""
+    },
+    "other_info":{
+        "SIGN_TYPE": "",
+        "NOTIFY_URL": ""
+    }
+}
+
+############################ ALIPAY_INFO #########################
+ALIPAY_INFO = {
+    'basic_info': {
+        "KEY": "",
+        "PARTNER": "",
+        "SELLER_EMAIL": ""
+    },
+    'other_info': {
+        "INPUT_CHARSET": "",
+        "INPUT_DIRECT_CHARSET": "",
+        "SIGN_TYPE": "",
+        "RETURN_URL": "",
+        "NOTIFY_URL": "",
+        "REFUND_NOTIFY_URL": "",
+        "SHOW_URL": "",
+        "ERROR_NOTIFY_URL": "",
+        "TRANSPORT": "",
+        "DEFAULT_BANK": "",
+        "IT_B_PAY": "",
+        "REFUND_URL": ""
+    }
+}
+

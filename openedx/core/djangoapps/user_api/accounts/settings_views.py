@@ -107,6 +107,7 @@ def account_settings_context(request):
 
     context = {
         'auth': {},
+        'phone': request.user.profile.phone_number or "null",
         'duplicate_provider': None,
         'nav_hidden': True,
         'fields': {
@@ -144,6 +145,10 @@ def account_settings_context(request):
         ),
         'extended_profile_fields': _get_extended_profile_fields(),
         'beta_language': beta_language,
+        'currency': {
+            'code': settings.PAID_COURSE_REGISTRATION_CURRENCY[0],
+            'symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1]
+        },
     }
 
     enterprise_customer = enterprise_customer_for_request(request)

@@ -1006,8 +1006,29 @@ urlpatterns += [
 ]
 
 
-# CAS
-# urlpatterns += (
-# url(r'^accounts/login/$', 'cas.views.login', name='login'),
-# url(r'^accounts/logout/$', 'cas.views.logout', name='logout'),
-# )
+
+# Membership
+if settings.FEATURES.get('ENABLE_MEMBERSHIP_INTEGRATION', False):
+    urlpatterns += [
+        url(r'', include('membership.urls')),
+    ]
+
+# payments
+if settings.FEATURES.get('ENABLE_PAYMENTS_INTEGRATION', False):
+    urlpatterns += [
+        url(r'', include('payments.urls')),
+    ]
+
+urlpatterns.extend(plugin_urls.get_patterns(plugin_constants.ProjectType.LMS))
+
+# professors
+if settings.FEATURES.get('ENABLE_PROFESSORS'):
+    urlpatterns += [
+        url(r'', include('professors.urls')),
+    ]
+
+if settings.HMM_ENABLED:
+    urlpatterns += [
+        url(r'^elitemba/', include('elitemba.urls', namespace='elitemba')),
+    ]
+
